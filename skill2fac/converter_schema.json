@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["skill_name", "operations", "artifacts", "final_target", "targets"],
+  "properties": {
+    "skill_name": {"type": "string"},
+    "operations": {
+      "description": "Step 1: every instruction in the skill, classified.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "excerpt", "category", "note"],
+        "properties": {
+          "id": {"type": "string", "description": "short id, e.g. op1"},
+          "excerpt": {"type": "string", "description": "the instruction, quoted or closely paraphrased from the skill"},
+          "category": {"type": "string", "enum": ["constraint", "operation", "style", "approval", "control"]},
+          "note": {"type": "string", "description": "how this instruction is realized in the fac workflow (which target, folded into which descriptions, or why it is dropped)"}
+        }
+      }
+    },
+    "artifacts": {
+      "description": "Steps 2-3: the files the workflow produces, in dependency order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "purpose", "from_operations"],
+        "properties": {
+          "path": {"type": "string"},
+          "purpose": {"type": "string"},
+          "from_operations": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "final_target": {"type": "string", "description": "concrete path (no $VARIABLES) of the file holding the skill's final deliverable"},
+    "targets": {
+      "description": "Step 4: the fac.yaml targets.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "description", "cmd", "schema", "dependencies", "variables"],
+        "properties": {
+          "path": {"type": "string"},
+          "description": {"type": ["string", "null"], "description": "LLM prompt for this file; null when cmd is set"},
+          "cmd": {"type": ["string", "null"], "description": "bash script that writes the file; null for LLM-built targets"},
+          "schema": {"type": ["string", "null"], "description": "JSON schema (as a JSON string) for .json targets, else null"},
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["target", "include"],
+              "properties": {
+                "target": {"type": "string"},
+                "include": {"type": "boolean", "description": "true = file contents are shown to the LLM building this target"}
+              }
+            }
+          },
+          "variables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "command"],
+              "properties": {
+                "name": {"type": "string", "description": "UPPER_SNAKE_CASE"},
+                "command": {"type": "string", "description": "shell command; each output line becomes one value"}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
